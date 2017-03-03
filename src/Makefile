@@ -626,6 +626,9 @@ depend:
 	  test -s $$file || $(HOST_RM) $$file; \
 	  done
 
+luacheck:
+	luacheck host/*.lua jit/*.lua
+
 .PHONY: default all amalg clean libbc depend
 
 ##############################################################################
