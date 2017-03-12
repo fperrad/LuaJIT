@@ -56,11 +56,6 @@
   /* Bit ops. */ \
   _(BNOT,	N , ref, ___) \
   _(BSWAP,	N , ref, ___) \
-  _(BAND,	C , ref, ref) \
-  _(BOR,	C , ref, ref) \
-  _(BXOR,	C , ref, ref) \
-  _(BSHL,	N , ref, ref) \
-  _(BSHR,	N , ref, ref) \
   _(BSAR,	N , ref, ref) \
   _(BROL,	N , ref, ref) \
   _(BROR,	N , ref, ref) \
@@ -72,6 +67,11 @@
   _(DIV,	N , ref, ref) \
   _(IDIV,	N , ref, ref) \
   _(MOD,	N , ref, ref) \
+  _(BAND,	C , ref, ref) \
+  _(BOR,	C , ref, ref) \
+  _(BXOR,	C , ref, ref) \
+  _(BSHL,	N , ref, ref) \
+  _(BSHR,	N , ref, ref) \
   _(POW,	N , ref, ref) \
   _(NEG,	N , ref, ref) \
   \
