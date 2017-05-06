@@ -1,5 +1,6 @@
 
 #include "tap_lua.h"
+#include "luajit.h"
 
 //#define DUMP_STACK()    dump_stack(L)
 #define DUMP_STACK()
@@ -258,7 +259,8 @@ int main(void) {
     TEST_TABLE(0);
     TEST_TABLE(3);
     TEST_TABLE_META_LEN(0);
-    todo("work only with LUAJIT_ENABLE_LUA52COMPAT", 1);
+    if (!luaJIT_compat52)
+        todo("work only with LUAJIT_ENABLE_LUA52COMPAT", 1);
     TEST_TABLE_META_LEN(42);
     TEST_USERDATA(0);
     TEST_USERDATA(42);
