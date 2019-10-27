@@ -155,6 +155,9 @@ LUALIB_API void (luaL_addstring) (luaL_Buffer *B, const char *s);
 LUALIB_API void (luaL_addvalue) (luaL_Buffer *B);
 LUALIB_API void (luaL_pushresult) (luaL_Buffer *B);
 
+/* From Lua 5.4 */
+#define luaL_buffaddr(B)	((B)->p)
+#define luaL_bufflen(B)		((size_t)((B)->p - (B)->buffer))
 
 /* }====================================================== */
 
