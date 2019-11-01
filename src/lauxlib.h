@@ -125,6 +125,8 @@ LUALIB_API void (luaL_setmetatable) (lua_State *L, const char *tname);
 #define luaL_newlib(L, l)	(luaL_newlibtable(L, l), luaL_setfuncs(L, l, 0))
 
 /* From Lua 5.4 */
+#define luaL_argexpected(L,cond,arg,tname)	\
+		((void)((cond) || luaL_typerror(L, (arg), (tname))))
 #define luaL_typeerror(L,n,t)	luaL_typerror(L, (n), (t))
 
 /*
