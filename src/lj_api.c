@@ -809,6 +809,23 @@ LUA_API void lua_getfield(lua_State *L, int idx, const char *k)
   incr_top(L);
 }
 
+LUA_API void lua_geti(lua_State *L, int idx, lua_Integer n)
+{
+  cTValue *v, *t = index2adr(L, idx);
+  TValue key;
+  api_checkvalidindex(L, t);
+  setintptrV(&key, n);
+  v = lj_meta_tget(L, t, &key);
+  if (v == NULL) {
+    L->top += 2;
+    lj_vm_call(L, L->top-2, 1+1);
+    L->top -= 2+LJ_FR2;
+    v = L->top+1+LJ_FR2;
+  }
+  copyTV(L, L->top, v);
+  incr_top(L);
+}
+
 LUA_API void lua_rawget(lua_State *L, int idx)
 {
   cTValue *t = index2adr(L, idx);
@@ -969,6 +986,27 @@ LUA_API void lua_setfield(lua_State *L, int idx, const char *k)
   api_checknelems(L, 1);
   api_checkvalidindex(L, t);
   setstrV(L, &key, lj_str_newz(L, k));
+  o = lj_meta_tset(L, t, &key);
+  if (o) {
+    /* NOBARRIER: lj_meta_tset ensures the table is not black. */
+    copyTV(L, o, --L->top);
+  } else {
+    TValue *base = L->top;
+    copyTV(L, base+2, base-3-2*LJ_FR2);
+    L->top = base+3;
+    lj_vm_call(L, base, 0+1);
+    L->top -= 2+LJ_FR2;
+  }
+}
+
+LUA_API void lua_seti(lua_State *L, int idx, lua_Integer n)
+{
+  TValue *o;
+  TValue key;
+  cTValue *t = index2adr(L, idx);
+  api_checknelems(L, 1);
+  api_checkvalidindex(L, t);
+  setintptrV(&key, n);
   o = lj_meta_tset(L, t, &key);
   if (o) {
     /* NOBARRIER: lj_meta_tset ensures the table is not black. */
