@@ -333,6 +333,13 @@ Internal memory-buffer-based trace entry/exit/start-recording event logging,
 mainly for debugging bugs in the JIT compiler. it requires `-DLUA_USE_TRACE_LOGS`
 when building moonjit.
 
+### Extensions from Lua 5.4
+
+LuaJIT supports some extensions from Lua 5.4:
+
+* Lua/C API extensions: `luaL_addgsub()` `luaL_argexpected()`
+  `luaL_buffaddr()` `luaL_bufflen()` `luaL_typeerror()`
+
 <a name="exceptions"></a>
 ### C++ Exception Interoperability
 
