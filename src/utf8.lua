@@ -31,7 +31,7 @@ local function posrelat(pos, len)
   return pos
 end
 
-local function utf8_decode(s, pos)
+local function utf8_decode(s, pos, strict)
   local c = byte(s, pos)
   pos = pos + 1
   if c < 0x80 then
@@ -50,7 +50,10 @@ local function utf8_decode(s, pos)
       c = lshift(c, 1)
     end
     res = bor(res, lshift(band(c, 0x7F), count * 5))
-    if (count > 3) or (res > 0x10FFFF) then
+    if (count > 5) or (res > 0x3FFFFFFF) then
+      return
+    end
+    if strict and ((count > 3) or (res > 0x10FFFF)) then
       return
     end
     return pos, res
@@ -58,10 +61,10 @@ local function utf8_decode(s, pos)
 end
 
 
--- len(s [, i [, j]]) --> number of characters that start in the
--- range [i,j], or nil + current position if 's' is not well formed in
--- that interval
-local function utf8_len(s, i, j)
+-- len(s [, i [, j [, lax]]]) --> number of characters that
+-- start in the range [i,j], or nil + current position if 's' is not
+-- well formed in that interval
+local function utf8_len(s, i, j, lax)
   if type(s) ~= 'string' then
     typeerror(1, s, 'string')
   end
@@ -82,9 +85,10 @@ local function utf8_len(s, i, j)
   if posj > (len + 1) then
     argerror(3, "final position out of string")
   end
+  local strict = not lax
   local n = 0
   while posi <= posj do
-    local pos = utf8_decode(s, posi)
+    local pos = utf8_decode(s, posi, strict)
     if not pos then
       return nil, posi
     end
@@ -95,9 +99,9 @@ local function utf8_len(s, i, j)
 end
 
 
--- codepoint(s, [i, [j]])  -> returns codepoints for all characters
--- that start in the range [i,j]
-local function utf8_codepoint(s, i, j)
+-- codepoint(s, [i, [j [, lax]]])  -> returns codepoints for all
+-- characters that start in the range [i,j]
+local function utf8_codepoint(s, i, j, lax)
   if type(s) ~= 'string' then
     typeerror(1, s, 'string')
   end
@@ -118,10 +122,11 @@ local function utf8_codepoint(s, i, j)
   if pose > len then
     argerror(3, "out of range")
   end
+  local strict = not lax
   local t = {}
   while posi <= pose do
     local res
-    posi, res = utf8_decode(s, posi)
+    posi, res = utf8_decode(s, posi, strict)
     if not posi then
       error("invalid UTF-8 code", 2)
     end
@@ -140,7 +145,7 @@ local function utf8_char(...)
     if type(v) ~= 'number' then
       typeerror(i, v, 'number')
     end
-    if (v < 0) or (v > 0x10FFFF) then
+    if (v < 0) or (v > 0x7FFFFFFF) then
       argerror(i, "value out of range")
     end
     if v < 0x80 then
@@ -152,7 +157,17 @@ local function utf8_char(...)
         if v < 0x10000 then
           t[#t+1] = bor(0xE0, rshift(v, 12))
         else
-          t[#t+1] = bor(0xF0, rshift(v, 18))
+          if v < 0x200000 then
+            t[#t+1] = bor(0xF0, rshift(v, 18))
+          else
+            if v < 0x4000000 then
+              t[#t+1] = bor(0xF8, rshift(v, 24))
+            else
+              t[#t+1] = bor(0xFC, rshift(v, 30))
+              t[#t+1] = bor(0x80, band(rshift(v, 24), 0x3f))
+            end
+            t[#t+1] = bor(0x80, band(rshift(v, 18), 0x3f))
+          end
           t[#t+1] = bor(0x80, band(rshift(v, 12), 0x3f))
         end
         t[#t+1] = bor(0x80, band(rshift(v, 6), 0x3f))
@@ -217,7 +232,8 @@ local function utf8_offset(s, n, i)
 end
 
 
-local function utf8_codes(ss)
+local function utf8_codes(ss, lax)
+  local strict = not lax
   local function iter_codes(s, n)
     local function iscont(pos)
       return band(byte(s, pos) or 0, 0xC0) == 0x80
@@ -241,8 +257,8 @@ local function utf8_codes(ss)
     if n > len then
       return
     else
-      local pos, code = utf8_decode(s, n)
-      if (pos == nil) or iscont(pos) then
+      local pos, code = utf8_decode(s, n, strict)
+      if pos == nil then
         error("invalid UTF-8 code", 2)
       end
       return n, code
@@ -256,7 +272,7 @@ local function utf8_codes(ss)
 end
 
 return {
-  charpattern = "[\0-\x7F\xC2-\xF4][\x80-\xBF]*",
+  charpattern = "[\0-\x7F\xC2-\xFD][\x80-\xBF]*",
   len = utf8_len,
   codepoint = utf8_codepoint,
   char = utf8_char,
