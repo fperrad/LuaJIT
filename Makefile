@@ -90,7 +90,7 @@ FILES_JITLIB= bc.lua bcsave.lua dump.lua p.lua v.lua zone.lua \
 	      dis_x86.lua dis_x64.lua dis_arm.lua dis_arm64.lua \
 	      dis_arm64be.lua dis_ppc.lua dis_mips.lua dis_mipsel.lua \
 	      dis_mips64.lua dis_mips64el.lua vmdef.lua
-FILES_COMPAT53= utf8.lua
+FILES_COMPAT53= math.lua utf8.lua
 FILES_COMPAT54= utf8.lua
 
 ifeq (,$(findstring Windows,$(OS)))
